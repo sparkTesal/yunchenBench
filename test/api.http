@@ -1,0 +1,100 @@
+### Get all tasks for a specific employee
+GET http://localhost:5000/api/tasks?empId=EMP001
+Accept: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response status is not 200");
+});
+
+client.test("Response is an array", function() {
+  var jsonData = response.body;
+  client.assert(Array.isArray(jsonData.tasks), "Tasks should be an array");
+});
+%}
+
+### Create a new task
+POST http://localhost:5000/api/tasks
+Content-Type: application/json
+
+{
+  "title": "New Test Task",
+  "prUrl": "https://github.com/example/repo/pull/3",
+  "empId": "EMP001",
+  "currentSpec": "Current specification of the task",
+  "proposedSpec": "Proposed specification for the task",
+  "taskDescription": "This is a test task created via HTTP request"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 201, "Response status is not 201");
+});
+
+client.test("Response has correct structure", function() {
+  var jsonData = response.body;
+  client.assert(jsonData.message === "Task created successfully", "Incorrect success message");
+  client.assert(jsonData.task.title === "New Test Task", "Task title does not match");
+  client.assert(jsonData.task.empId === "EMP001", "Employee ID does not match");
+});
+
+// Store the created task ID for later use
+client.global.set("taskId", response.body.task.id);
+%}
+
+### Get a specific task
+GET http://localhost:5000/api/tasks/{{taskId}}
+Accept: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response status is not 200");
+});
+
+client.test("Response has correct task details", function() {
+  var jsonData = response.body;
+  client.assert(jsonData.title === "New Test Task", "Task title does not match");
+  client.assert(jsonData.empId === "EMP001", "Employee ID does not match");
+});
+%}
+
+### Update a task
+PUT http://localhost:5000/api/tasks/{{taskId}}
+Content-Type: application/json
+
+{
+  "currentSpec": "Updated current specification",
+  "proposedSpec": "Updated proposed specification",
+  "taskDescription": "This task description has been updated"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response status is not 200");
+});
+
+client.test("Task updated successfully", function() {
+  var jsonData = response.body;
+  client.assert(jsonData.success === true, "Update was not successful");
+  client.assert(jsonData.message === "Task updated successfully", "Incorrect success message");
+});
+%}
+
+### Get user information
+GET http://localhost:5000/api/user
+Accept: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response status is not 200");
+});
+
+client.test("Response has correct user details", function() {
+  var jsonData = response.body;
+  client.assert(jsonData.name === "Test User", "Incorrect user name");
+  client.assert(jsonData.email === "test@example.com", "Incorrect email");
+  client.assert(jsonData.empId === "EMP001", "Incorrect employee ID");
+});
+%}
+
+
